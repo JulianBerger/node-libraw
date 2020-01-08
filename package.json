@@ -1,6 +1,6 @@
 {
   "name": "libraw",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Asynchronous bindings for LibRaw",
   "os": [
     "darwin",
@@ -34,6 +34,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^6.2.2",
-    "node-gyp": "^6.0.0"
+    "node-gyp": "^6.1.0"
   }
 }
