@@ -35,6 +35,22 @@ const libraw = {
           });
       });
     });
+  },
+
+  extractThumbBuffer: function(input) {
+    return new Promise(function(resolve, reject) {
+      fs.access(input, fs.R_OK | fs.W_OK, function(err) {
+        if (err)
+          reject(err);
+        else
+          raw.extractThumbBuffer(input, function(err, output) {
+            if (err)
+              reject(err);
+            else
+              resolve(output);
+          });
+      });
+    });
   }
 };
 

@@ -51,4 +51,10 @@ describe('LibRAW', function() {
     });
   });
 
+  it('should be able to return a buffer instead of a filename', function() {
+    libraw.extractThumbBuffer('./test.raf')
+      .then(function (output) {
+        expect(typeof output).to.be.equal("output")
+      })
+  })
 });

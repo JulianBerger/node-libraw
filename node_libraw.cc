@@ -112,11 +112,73 @@ namespace node_libraw {
     file.close();
   }
 
+  void free_callback(char* data, void* thumb) {
+    LibRaw::dcraw_clear_mem(reinterpret_cast<libraw_processed_image_t *> (thumb));
+  }
+
+  NAN_METHOD(ExtractThumbBuffer) {
+    Nan::HandleScope scope;
+
+    LibRaw RawProcessor;
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::String::Utf8Value filenameFromArgs(isolate, info[0]);
+    std::string filename = std::string(*filenameFromArgs);
+    
+    Nan::Callback *callback = new Nan::Callback(Local<Function>::Cast(info[1]));
+
+    std::string extension = "thumb.ppm";
+
+    std::ifstream file;
+    file.open(filename.c_str(), std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+
+
+    if (file.read(buffer.data(), size)) {
+      RawProcessor.open_buffer(buffer.data(), size);
+      RawProcessor.unpack();
+      RawProcessor.unpack_thumb();
+    
+      int errorCode = 0;
+      libraw_processed_image_t *thumb = RawProcessor.dcraw_make_mem_thumb(&errorCode);
+      
+      if (errorCode != LIBRAW_SUCCESS) {
+        Local<v8::Value> argv[2] = {
+          Nan::New("Error processing image").ToLocalChecked(),
+          Nan::Null()
+        };
+        callback->Call(2, argv);
+      } else {
+        Local<v8::Value> argv[2] = {
+          Nan::Null(),
+          Nan::NewBuffer((char*)(thumb->data), thumb->data_size, free_callback, thumb).ToLocalChecked()
+        };
+        callback->Call(2, argv);
+      }
+      
+      //RawProcessor.dcraw_clear_mem(thumb);
+      RawProcessor.recycle();
+    
+    }
+
+    file.close();
+  }
+
+
   void init(Local<Object> exports) {
     Nan::Set(
       exports,
       Nan::New<String>("extractThumb").ToLocalChecked(),
       Nan::GetFunction(Nan::New<v8::FunctionTemplate>(ExtractThumb)).ToLocalChecked()
+    );
+
+    Nan::Set(
+      exports,
+      Nan::New<String>("extractThumbBuffer").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<v8::FunctionTemplate>(ExtractThumbBuffer)).ToLocalChecked()
     );
 
     Nan::Set(
