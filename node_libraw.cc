@@ -20,6 +20,10 @@ namespace node_libraw {
   using v8::Value;
   using v8::Null;
 
+  void free_callback(char* data, void* thumb) {
+    LibRaw::dcraw_clear_mem(reinterpret_cast<libraw_processed_image_t *> (thumb));
+  }
+
   NAN_METHOD(Extract) {
     Nan::HandleScope scope;
 
@@ -60,6 +64,54 @@ namespace node_libraw {
       };
 
       callback->Call(2, argv);
+    }
+
+    file.close();
+  }
+
+  NAN_METHOD(ExtractBuffer) {
+    Nan::HandleScope scope;
+
+    LibRaw RawProcessor;
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::String::Utf8Value filenameFromArgs(isolate, info[0]);
+    std::string filename = std::string(*filenameFromArgs);
+    
+    Nan::Callback *callback = new Nan::Callback(Local<Function>::Cast(info[1]));
+
+    std::ifstream file;
+    file.open(filename.c_str(), std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+
+    if (file.read(buffer.data(), size)) {
+      RawProcessor.open_buffer(buffer.data(), size);
+      RawProcessor.unpack();
+      RawProcessor.imgdata.params.output_tiff = 1;
+      RawProcessor.imgdata.params.output_bps = 16;
+      RawProcessor.imgdata.params.use_camera_wb = 1;
+      RawProcessor.dcraw_process();
+
+      int errorCode = 0;
+      libraw_processed_image_t *image = RawProcessor.dcraw_make_mem_image(&errorCode);
+      
+      if (errorCode != LIBRAW_SUCCESS) {
+        Local<v8::Value> argv[2] = {
+          Nan::New("Error processing image").ToLocalChecked(),
+          Nan::Null()
+        };
+        callback->Call(2, argv);
+      } else {
+        Local<v8::Value> argv[2] = {
+          Nan::Null(),
+          Nan::NewBuffer((char*)(image->data), image->data_size, free_callback, image).ToLocalChecked()
+        };
+        callback->Call(2, argv);
+      }
+      RawProcessor.recycle();
     }
 
     file.close();
@@ -112,10 +164,6 @@ namespace node_libraw {
     file.close();
   }
 
-  void free_callback(char* data, void* thumb) {
-    LibRaw::dcraw_clear_mem(reinterpret_cast<libraw_processed_image_t *> (thumb));
-  }
-
   NAN_METHOD(ExtractThumbBuffer) {
     Nan::HandleScope scope;
 
@@ -163,6 +211,38 @@ namespace node_libraw {
     file.close();
   }
 
+  void exif_callback(void *context, int tag, int type, int len, unsigned int ord, void *ifp) {
+
+  }
+
+  NAN_METHOD(GetExif) {
+    Nan::HandleScope scope;
+
+    LibRaw RawProcessor;
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::String::Utf8Value filenameFromArgs(isolate, info[0]);
+    std::string filename = std::string(*filenameFromArgs);
+
+    Nan::Callback *callback = new Nan::Callback(Local<Function>::Cast(info[1]));
+    
+    std::ifstream file;
+    file.open(filename.c_str(), std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(size);
+
+    if (file.read(buffer.data(), size)) {
+      RawProcessor.open_buffer(buffer.data(), size);
+      //RawProcessor.set_exifparser_handler(exif_callback, output)
+    }
+
+    RawProcessor.recycle();
+
+    file.close();
+  }
+
 
   void init(Local<Object> exports) {
     Nan::Set(
@@ -181,6 +261,18 @@ namespace node_libraw {
       exports,
       Nan::New<String>("extract").ToLocalChecked(),
       Nan::GetFunction(Nan::New<v8::FunctionTemplate>(Extract)).ToLocalChecked()
+    );
+
+    Nan::Set(
+      exports,
+      Nan::New<String>("extractBuffer").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<v8::FunctionTemplate>(ExtractBuffer)).ToLocalChecked()
+    );
+
+    Nan::Set(
+      exports,
+      Nan::New<String>("getExif").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<v8::FunctionTemplate>(GetExif)).ToLocalChecked()
     );
   }
 

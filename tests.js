@@ -51,11 +51,28 @@ describe('LibRAW', function() {
     });
   });
 
-  it('should be able to return a buffer instead of a filename', function() {
-    libraw.extractThumbBuffer('./test.raf')
-      .then(function (output) {
-        expect(typeof output).to.be.equal("object")
-        fs.writeFileSync( 'test2.jpg', output)
-      })
+  describe('Extraction to a Buffer', function() { 
+    it('should return a thumbnail buffer', function() {
+      libraw.extractThumbBuffer('./test.raf')
+        .then(function (output) {
+          expect(typeof output).to.be.equal("object")
+          fs.writeFileSync( 'test3.jpg', output)
+        });
+    });
+
+    it('should return a full size buffer', function() {
+      libraw.extractBuffer('./test.raf')
+        .then(function (output) {
+          expect(typeof output).to.be.equal("object")
+          fs.writeFileSync( 'test4.jpg', output)
+        });
+    });
   })
+
+  it('should read exif data from a file', function() {
+    libraw.getExif('./test.raf')
+      .then(function(exif) {
+        expect(exif['Orientation']).to.be.equal("Rotate 90 CW")
+      });
+  });
 });

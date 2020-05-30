@@ -51,6 +51,38 @@ const libraw = {
           });
       });
     });
+  },
+
+  extractBuffer: function(input) {
+    return new Promise(function(resolve, reject) {
+      fs.access(input, fs.R_OK | fs.W_OK, function(err) {
+        if (err)
+          reject(err);
+        else
+          raw.extractBuffer(input, function(err, output) {
+            if (err)
+              reject(err);
+            else
+              resolve(output);
+          });
+      });
+    });
+  },
+
+  getExif: function(input) {
+    return new Promise(function(resolve, reject) {
+      fs.access(input, fs.R_OK | fs.W_OK, function(err) {
+        if (err)
+          reject(err);
+        else
+          raw.getExif(input, function(err, output) {
+            if (err)
+              reject(err);
+            else
+              resolve(output);
+          });
+      });
+    });
   }
 };
 
