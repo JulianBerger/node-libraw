@@ -1,6 +1,6 @@
 {
   "name": "libraw",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Asynchronous bindings for LibRaw",
   "os": [
     "darwin",
