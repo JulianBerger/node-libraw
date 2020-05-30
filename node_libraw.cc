@@ -136,7 +136,6 @@ namespace node_libraw {
 
     std::vector<char> buffer(size);
 
-
     if (file.read(buffer.data(), size)) {
       RawProcessor.open_buffer(buffer.data(), size);
       RawProcessor.unpack();
@@ -158,10 +157,7 @@ namespace node_libraw {
         };
         callback->Call(2, argv);
       }
-      
-      //RawProcessor.dcraw_clear_mem(thumb);
       RawProcessor.recycle();
-    
     }
 
     file.close();
