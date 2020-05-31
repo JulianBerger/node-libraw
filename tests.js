@@ -52,20 +52,21 @@ describe('LibRAW', function() {
   });
 
   describe('Extraction to a Buffer', function() { 
-    it('should return a thumbnail buffer', function() {
-      libraw.extractThumbBuffer('./test.raf')
-        .then(function (output) {
-          expect(typeof output).to.be.equal("object")
-          fs.writeFileSync( 'test3.jpg', output)
-        });
+    this.timeout(5000);
+
+    it('should return a thumbnail buffer', function(done) {
+      libraw.extractThumbBuffer('./test.raf').then(function(buffer) {
+        expect(buffer.length).to.be.greaterThan(2048 * 1024);
+        done();
+      })
     });
 
-    it('should return a full size buffer', function() {
-      libraw.extractBuffer('./test.raf')
-        .then(function (output) {
-          expect(typeof output).to.be.equal("object")
-          fs.writeFileSync( 'test4.jpg', output)
-        });
+    it('should return a full size buffer', function(done) {
+      this.timeout(90000);
+      libraw.extractBuffer('./test.raf').then(function(buffer) {
+        expect(buffer.length).to.be.greaterThan(1000000);
+        done();
+      })
     });
   })
 
