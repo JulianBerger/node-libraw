@@ -133,35 +133,23 @@ namespace node_libraw {
 
     std::string extension = "thumb.ppm";
 
-    std::ifstream file;
-    file.open(filename.c_str(), std::ios::binary | std::ios::ate);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
+    RawProcessor.open_file(filename.c_str());
+    RawProcessor.unpack_thumb();
 
-    std::vector<char> buffer(size);
-
-    if (file.read(buffer.data(), size)) {
-      RawProcessor.open_buffer(buffer.data(), size);
-      RawProcessor.unpack();
-      RawProcessor.unpack_thumb();
-
-      if (RawProcessor.imgdata.thumbnail.tformat == LIBRAW_THUMBNAIL_JPEG) {
-        extension = "thumb.jpg";
-      }
-
-      output = output + "." + extension;
-      RawProcessor.dcraw_thumb_writer(output.c_str());
-      RawProcessor.recycle();
-
-      Local<v8::Value> argv[2] = {
-        Nan::Null(),
-        Nan::New(output).ToLocalChecked()
-      };
-
-      callback->Call(2, argv);
+    if (RawProcessor.imgdata.thumbnail.tformat == LIBRAW_THUMBNAIL_JPEG) {
+      extension = "thumb.jpg";
     }
 
-    file.close();
+    output = output + "." + extension;
+    RawProcessor.dcraw_thumb_writer(output.c_str());
+    RawProcessor.recycle();
+
+    Local<v8::Value> argv[2] = {
+      Nan::Null(),
+      Nan::New(output).ToLocalChecked()
+    };
+
+    callback->Call(2, argv);
   }
 
   NAN_METHOD(ExtractThumbBuffer) {
@@ -177,38 +165,27 @@ namespace node_libraw {
 
     std::string extension = "thumb.ppm";
 
-    std::ifstream file;
-    file.open(filename.c_str(), std::ios::binary | std::ios::ate);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::vector<char> buffer(size);
-
-    if (file.read(buffer.data(), size)) {
-      RawProcessor.open_buffer(buffer.data(), size);
-      RawProcessor.unpack();
-      RawProcessor.unpack_thumb();
+    RawProcessor.open_file(filename.c_str());
+    RawProcessor.unpack_thumb();
+  
+    int errorCode = 0;
+    libraw_processed_image_t *thumb = RawProcessor.dcraw_make_mem_thumb(&errorCode);
     
-      int errorCode = 0;
-      libraw_processed_image_t *thumb = RawProcessor.dcraw_make_mem_thumb(&errorCode);
-      
-      if (errorCode != LIBRAW_SUCCESS) {
-        Local<v8::Value> argv[2] = {
-          Nan::New("Error processing image").ToLocalChecked(),
-          Nan::Null()
-        };
-        callback->Call(2, argv);
-      } else {
-        Local<v8::Value> argv[2] = {
-          Nan::Null(),
-          Nan::NewBuffer((char*)(thumb->data), thumb->data_size, free_callback, thumb).ToLocalChecked()
-        };
-        callback->Call(2, argv);
-      }
-      RawProcessor.recycle();
+    if (errorCode != LIBRAW_SUCCESS) {
+      Local<v8::Value> argv[2] = {
+        Nan::New("Error processing image").ToLocalChecked(),
+        Nan::Null()
+      };
+      callback->Call(2, argv);
+    } else {
+      Local<v8::Value> argv[2] = {
+        Nan::Null(),
+        Nan::NewBuffer((char*)(thumb->data), thumb->data_size, free_callback, thumb).ToLocalChecked()
+      };
+      callback->Call(2, argv);
     }
-
-    file.close();
+    
+    RawProcessor.recycle();
   }
 
   void exif_callback(void *context, int tag, int type, int len, unsigned int ord, void *ifp) {
@@ -226,21 +203,10 @@ namespace node_libraw {
 
     Nan::Callback *callback = new Nan::Callback(Local<Function>::Cast(info[1]));
     
-    std::ifstream file;
-    file.open(filename.c_str(), std::ios::binary | std::ios::ate);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::vector<char> buffer(size);
-
-    if (file.read(buffer.data(), size)) {
-      RawProcessor.open_buffer(buffer.data(), size);
-      //RawProcessor.set_exifparser_handler(exif_callback, output)
-    }
+    RawProcessor.open_file(filename.c_str());
+    //RawProcessor.set_exifparser_handler(exif_callback, output)
 
     RawProcessor.recycle();
-
-    file.close();
   }
 
 
