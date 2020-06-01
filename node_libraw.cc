@@ -91,7 +91,7 @@ namespace node_libraw {
       RawProcessor.open_buffer(buffer.data(), size);
       RawProcessor.unpack();
       RawProcessor.imgdata.params.output_tiff = 1;
-      RawProcessor.imgdata.params.output_bps = 16;
+      RawProcessor.imgdata.params.output_bps = 8;
       RawProcessor.imgdata.params.use_camera_wb = 1;
       RawProcessor.dcraw_process();
 
