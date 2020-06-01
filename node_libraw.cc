@@ -242,5 +242,5 @@ namespace node_libraw {
     );
   }
 
-  NODE_MODULE(libraw, init)
+  NAN_MODULE_WORKER_ENABLED(libraw, init)
 }
