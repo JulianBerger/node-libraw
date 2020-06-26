@@ -48,7 +48,7 @@ namespace node_libraw {
       RawProcessor.open_buffer(buffer.data(), size);
       RawProcessor.unpack();
       RawProcessor.imgdata.params.output_tiff = 1;  // output as a tiff!
-      RawProcessor.imgdata.params.half_size = 1 // export half size files (bayer)
+      // RawProcessor.imgdata.params.half_size = 1 // export half size files (bayer = 50% resolution)
       RawProcessor.imgdata.params.output_bps = 8; // 8 bits export is enough
       RawProcessor.imgdata.params.output_color = 1; // sRGB = 1
       RawProcessor.imgdata.params.use_camera_wb = 1;  // use camera white balance
@@ -93,7 +93,7 @@ namespace node_libraw {
       RawProcessor.open_buffer(buffer.data(), size);
       RawProcessor.unpack();
       RawProcessor.imgdata.params.output_tiff = 1;  // output as a tiff!
-      RawProcessor.imgdata.params.half_size = 1 // export half size files (bayer)
+      // RawProcessor.imgdata.params.half_size = 1 // export half size files (bayer)
       RawProcessor.imgdata.params.output_bps = 8; // 8 bits export is enough
       RawProcessor.imgdata.params.output_color = 1; // sRGB = 1
       RawProcessor.imgdata.params.use_camera_wb = 1;  // use camera white balance
