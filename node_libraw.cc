@@ -53,7 +53,7 @@ namespace node_libraw {
       RawProcessor.imgdata.params.use_camera_wb = 1;  // use camera white balance
       RawProcessor.dcraw_process();
 
-      output = output + ".tiff";
+      // output = output + ".tiff";
       RawProcessor.dcraw_ppm_tiff_writer(output.c_str());
       RawProcessor.recycle();
 
