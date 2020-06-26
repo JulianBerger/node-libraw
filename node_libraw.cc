@@ -47,9 +47,10 @@ namespace node_libraw {
     if (file.read(buffer.data(), size)) {
       RawProcessor.open_buffer(buffer.data(), size);
       RawProcessor.unpack();
-      RawProcessor.imgdata.params.output_tiff = 1;
-      RawProcessor.imgdata.params.output_bps = 16;
-      RawProcessor.imgdata.params.use_camera_wb = 1;
+      RawProcessor.imgdata.params.output_tiff = 1;  // output as a tiff!
+      RawProcessor.imgdata.params.output_bps = 8; // 8 bits export is enough
+      RawProcessor.imgdata.params.output_color = 1; // sRGB = 1
+      RawProcessor.imgdata.params.use_camera_wb = 1;  // use camera white balance
       RawProcessor.dcraw_process();
 
       output = output + ".tiff";
