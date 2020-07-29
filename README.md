@@ -41,6 +41,13 @@ Any contributions are, of course, welcome.
 
 On linux: ```sudo apt-get install libraw-dev```
 
+## Update LibRaw Submodule
+
+```git submodule update --recursive --remote```
+
+https://github.com/tj/git-extras/pull/80
+
+
 ## Known issues
 
 **OSX: libintl.h not found**
